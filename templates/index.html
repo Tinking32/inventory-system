@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>我的库存管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style> body { padding: 20px; } .container { max-width: 900px; margin-top: 20px; } </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">📦 智能库存管理系统</h2>
+        
+        <div class="mb-3 text-end">
+            <a href="/add" class="btn btn-success">+ 添加新商品</a>
+        </div>
+
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>商品名称</th>
+                    <th>数量</th>
+                    <th>单价 ($)</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price }}</td>
+                    <td>
+                        <a href="/edit/{{ item.id }}" class="btn btn-warning btn-sm">编辑</a>
+                        <a href="/delete/{{ item.id }}" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除吗？')">删除</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">仓库是空的，快去添加商品吧！</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
