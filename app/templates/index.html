@@ -28,10 +28,12 @@
 
 <div class="row mb-3">
     <div class="col-md-6">
-        <form action="/" method="GET" class="d-flex">
-            <input type="text" name="q" class="form-control me-2" placeholder="Search product name..." value="{{ query or '' }}">
-            <button type="submit" class="btn btn-outline-primary">Search</button>
-            <a href="/" class="btn btn-outline-secondary ms-2">Reset</a>
+        <form action="/" method="GET">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Search product name..." value="{{ query or '' }}">
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+                <a href="/" class="btn btn-outline-secondary">Reset</a>
+            </div>
         </form>
     </div>
     <div class="col-md-6 text-end">
@@ -99,7 +101,6 @@ document.getElementById('ask-form').addEventListener('submit', async function(e)
             <div class="alert alert-info mb-0">
                 <strong>Q:</strong> ${data.question}<br>
                 <strong>A:</strong> ${data.response_text}
-                ${data.results.length ? '<hr class="my-2"><small class="text-muted">Query type: ' + data.query_type + ' | Results: ' + data.results.length + ' | Mode: ' + data.mode + '</small>' : ''}
             </div>`;
     } catch (err) {
         result.innerHTML = '<div class="alert alert-danger">Failed to get answer. Is the API running?</div>';
@@ -116,7 +117,7 @@ new Chart(document.getElementById('stockChart'), {
         datasets: [{ label: 'Stock (Top 10)', data: dataPoints,
             backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 }]
     },
-    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { ticks: { maxRotation: 45 } } }, maxBarThickness: 80 }
 });
 </script>
 {% endblock %}
