@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-primary">📥 Import Products from CSV</h2>
+    <a href="/" class="btn btn-outline-secondary">← Back to Dashboard</a>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+{% if import_done %}
+<div class="alert alert-success">
+    <strong>Import complete!</strong> {{ imported }} product(s) imported. {{ skipped }} row(s) skipped.
+    <a href="/" class="btn btn-primary btn-sm ms-3">View Dashboard</a>
+</div>
+{% endif %}
+
+{% if not show_preview and not import_done %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white"><strong>Upload CSV File</strong></div>
+            <div class="card-body">
+                <form action="/import" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Select .csv file</label>
+                        <input type="file" name="file" class="form-control" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload &amp; Preview</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white"><strong>CSV Format</strong></div>
+            <div class="card-body">
+                <p class="text-muted small mb-2">Expected columns: <code>name</code>, <code>description</code>, <code>quantity</code>, <code>price</code>, <code>low_stock_threshold</code>, <code>category</code></p>
+                <p class="text-muted small mb-2">Only <code>name</code> and <code>price</code> are required. Category auto-detects if left empty.</p>
+                <pre class="bg-light p-2 rounded small mb-0" style="font-size:11px; max-height:180px; overflow-y:auto;">{{ sample }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if show_preview %}
+<div class="card mb-3">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>Preview</strong>
+        <span>
+            <span class="badge bg-success">✓ {{ valid_count }} valid</span>
+            {% if error_count > 0 %}
+            <span class="badge bg-danger ms-1">✗ {{ error_count }} errors</span>
+            {% endif %}
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-sm table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th><th>Name</th><th>Description</th><th>Qty</th><th>Price</th><th>Threshold</th><th>Category</th><th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in rows %}
+                <tr class="{{ 'table-danger' if not r.valid else '' }}">
+                    <td>{{ r.row_num }}</td>
+                    <td><strong>{{ r.name }}</strong></td>
+                    <td class="text-muted small">{{ r.description or '-' }}</td>
+                    <td>{{ r.quantity }}</td>
+                    <td>${{ "%.2f"|format(r.price) }}</td>
+                    <td>{{ r.low_stock_threshold }}</td>
+                    <td>{{ r.category_name or '(auto)' }}</td>
+                    <td>
+                        {% if r.valid %}
+                        <span class="text-success">✓</span>
+                        {% else %}
+                        <span class="text-danger" title="{{ r.errors|join(', ') }}">✗ {{ r.errors|join('; ') }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if valid_count > 0 %}
+<form action="/import/execute" method="POST">
+    <input type="hidden" name="csv_content" value="{{ csv_content|e }}">
+    <button type="submit" class="btn btn-success btn-lg">
+        Import {{ valid_count }} valid product(s)
+    </button>
+    <a href="/import" class="btn btn-outline-secondary ms-2">Cancel</a>
+</form>
+{% else %}
+<a href="/import" class="btn btn-outline-secondary">← Try another file</a>
+{% endif %}
+{% endif %}
+
+{% endblock %}

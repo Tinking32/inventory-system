@@ -3,9 +3,11 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+
 from app.database import get_db
 from app.models import Category, Product
 from app.services.category_auto import suggest_category
+from app.services.csv_import import execute_import, generate_sample_csv, parse_csv
 
 templates = Jinja2Templates(directory="app/templates")
 router = APIRouter(tags=["frontend"])
@@ -207,3 +209,65 @@ def delete_category(
     db.delete(cat)
     db.commit()
     return RedirectResponse(url="/categories", status_code=303)
+
+
+# ---- CSV Import ----
+
+@router.get("/import")
+def import_form(request: Request):
+    sample = generate_sample_csv()
+    return templates.TemplateResponse(
+        "import.html", {"request": request, "sample": sample}
+    )
+
+
+@router.post("/import")
+async def import_preview(request: Request, db: Session = Depends(get_db)):
+    body = await request.form()
+    file = body.get("file")
+    if not file or not hasattr(file, "file"):
+        return templates.TemplateResponse(
+            "import.html",
+            {"request": request, "sample": generate_sample_csv(), "error": "Please select a CSV file."},
+        )
+
+    content = (await file.read()).decode("utf-8", errors="replace")
+    rows = parse_csv(content, db)
+    valid_count = sum(1 for r in rows if r.valid)
+    error_count = sum(1 for r in rows if not r.valid)
+
+    return templates.TemplateResponse(
+        "import.html",
+        {
+            "request": request,
+            "sample": generate_sample_csv(),
+            "rows": rows,
+            "valid_count": valid_count,
+            "error_count": error_count,
+            "csv_content": content,
+            "show_preview": True,
+        },
+    )
+
+
+@router.post("/import/execute")
+async def import_execute(request: Request, db: Session = Depends(get_db)):
+    body = await request.form()
+    csv_content = body.get("csv_content", "")
+    content = csv_content if isinstance(csv_content, str) else str(csv_content)
+
+    rows = parse_csv(content, db)
+    imported = execute_import(rows, db)
+    total = len(rows)
+
+    return templates.TemplateResponse(
+        "import.html",
+        {
+            "request": request,
+            "sample": generate_sample_csv(),
+            "imported": imported,
+            "skipped": total - imported,
+            "total": total,
+            "import_done": True,
+        },
+    )
