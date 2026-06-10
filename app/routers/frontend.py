@@ -141,6 +141,35 @@ def add_category(
     return RedirectResponse(url="/categories", status_code=303)
 
 
+@router.post("/categories/{category_id}/edit")
+def edit_category(
+    category_id: int,
+    request: Request,
+    name: str = Form(..., min_length=1),
+    db: Session = Depends(get_db),
+):
+    cat = db.get(Category, category_id)
+    if not cat:
+        return RedirectResponse(url="/categories", status_code=303)
+
+    existing = db.query(Category).filter(Category.name == name.strip(), Category.id != category_id).first()
+    if existing:
+        cats = db.query(Category).order_by(Category.name).all()
+        return templates.TemplateResponse(
+            "categories.html",
+            {"request": request, "categories": cats, "error": f"Category '{name}' already exists."},
+            status_code=400,
+        )
+
+    cat.name = name.strip()
+    db.commit()
+    cats = db.query(Category).order_by(Category.name).all()
+    return templates.TemplateResponse(
+        "categories.html",
+        {"request": request, "categories": cats, "ok": f"Category renamed to '{cat.name}'."},
+    )
+
+
 @router.post("/categories/{category_id}/delete")
 def delete_category(
     category_id: int,

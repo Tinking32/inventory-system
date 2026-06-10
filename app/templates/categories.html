@@ -11,6 +11,12 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 {% endif %}
+{% if ok %}
+<div class="alert alert-success alert-dismissible fade show">
+    {{ ok }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
 
 <div class="row">
     <div class="col-md-5">
@@ -29,22 +35,29 @@
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
                     <thead class="table-dark">
-                        <tr><th>ID</th><th>Name</th><th>Description</th><th style="width:80px"></th></tr>
+                        <tr><th>ID</th><th>Name</th><th>Actions</th></tr>
                     </thead>
                     <tbody>
                         {% for cat in categories %}
-                        <tr>
-                            <td>{{ cat.id }}</td>
-                            <td><strong>{{ cat.name }}</strong></td>
-                            <td class="text-muted">{{ cat.description or '-' }}</td>
+                        <tr id="row-{{ cat.id }}">
+                            <td style="width:60px">{{ cat.id }}</td>
                             <td>
-                                <form action="/categories/{{ cat.id }}/delete" method="POST" onsubmit="return confirm('Delete {{ cat.name }}?');">
-                                    <button class="btn btn-danger btn-sm">🗑</button>
+                                <span id="name-{{ cat.id }}" class="fw-bold">{{ cat.name }}</span>
+                                <form id="edit-form-{{ cat.id }}" action="/categories/{{ cat.id }}/edit" method="POST" style="display:none" class="d-flex gap-1">
+                                    <input type="text" name="name" class="form-control form-control-sm" value="{{ cat.name }}" required style="max-width:200px">
+                                    <button type="submit" class="btn btn-sm btn-success">Save</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleEdit({{ cat.id }})">Cancel</button>
+                                </form>
+                            </td>
+                            <td style="width:120px">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="toggleEdit({{ cat.id }})">✏️</button>
+                                <form action="/categories/{{ cat.id }}/delete" method="POST" style="display:inline" onsubmit="return confirm('Delete {{ cat.name }}?');">
+                                    <button class="btn btn-outline-danger btn-sm">🗑</button>
                                 </form>
                             </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="4" class="text-center text-muted py-3">No categories yet.</td></tr>
+                        <tr><td colspan="3" class="text-center text-muted py-3">No categories yet.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -52,4 +65,19 @@
         </div>
     </div>
 </div>
+
+<script>
+function toggleEdit(id) {
+    const nameSpan = document.getElementById('name-' + id);
+    const editForm = document.getElementById('edit-form-' + id);
+    if (editForm.style.display === 'none') {
+        nameSpan.style.display = 'none';
+        editForm.style.display = 'flex';
+        editForm.querySelector('input').focus();
+    } else {
+        nameSpan.style.display = '';
+        editForm.style.display = 'none';
+    }
+}
+</script>
 {% endblock %}
