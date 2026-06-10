@@ -2,9 +2,22 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="text-primary">Inventory Dashboard</h2>
     <span class="badge bg-success">v2 — FastAPI + JWT + Docker</span>
+</div>
+
+<!-- Spotlight Ask AI -->
+<div class="card mb-4 border-primary">
+    <div class="card-body py-3">
+        <form id="ask-form" class="d-flex align-items-center gap-3">
+            <span class="text-nowrap fw-bold text-primary">🤖 Ask AI</span>
+            <input type="text" id="ask-input" class="form-control form-control-lg border-0 shadow-none"
+                   placeholder="Ask anything about your inventory... e.g., which products are low on stock?" autocomplete="off">
+            <button type="submit" class="btn btn-primary px-4">Ask</button>
+        </form>
+        <div id="ask-result" class="mt-3" style="display:none;"></div>
+    </div>
 </div>
 
 <div class="card mb-4">
@@ -64,16 +77,46 @@
 </div>
 
 <script>
-    const labels = [{% for item in items[:10] %}"{{ item.name }}",{% endfor %}];
-    const dataPoints = [{% for item in items[:10] %}{{ item.quantity }},{% endfor %}];
-    new Chart(document.getElementById('stockChart'), {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{ label: 'Stock (Top 10)', data: dataPoints,
-                backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-    });
+// Ask AI — spotlight search
+document.getElementById('ask-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const input = document.getElementById('ask-input');
+    const result = document.getElementById('ask-result');
+    const question = input.value.trim();
+    if (!question) return;
+
+    result.style.display = 'block';
+    result.innerHTML = '<div class="text-muted">🤔 Thinking...</div>';
+
+    try {
+        const res = await fetch('/api/ask/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({question: question})
+        });
+        const data = await res.json();
+        result.innerHTML = `
+            <div class="alert alert-info mb-0">
+                <strong>Q:</strong> ${data.question}<br>
+                <strong>A:</strong> ${data.response_text}
+                ${data.results.length ? '<hr class="my-2"><small class="text-muted">Query type: ' + data.query_type + ' | Results: ' + data.results.length + ' | Mode: ' + data.mode + '</small>' : ''}
+            </div>`;
+    } catch (err) {
+        result.innerHTML = '<div class="alert alert-danger">Failed to get answer. Is the API running?</div>';
+    }
+});
+
+// Chart
+const labels = [{% for item in items[:10] %}"{{ item.name }}",{% endfor %}];
+const dataPoints = [{% for item in items[:10] %}{{ item.quantity }},{% endfor %}];
+new Chart(document.getElementById('stockChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{ label: 'Stock (Top 10)', data: dataPoints,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+});
 </script>
 {% endblock %}
