@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.routers import ask, auth, categories, products
+from app.routers import ask, auth, categories, frontend, products
 
 app = FastAPI(
     title="Inventory Management System",
@@ -9,6 +9,9 @@ app = FastAPI(
 )
 
 # Routers
+# Frontend routes first (/, /add, /edit, /delete)
+app.include_router(frontend.router)
+# API routes
 app.include_router(auth.router)
 app.include_router(ask.router)
 app.include_router(products.router)

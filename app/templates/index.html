@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-primary">Inventory Dashboard</h2>
+    <span class="badge bg-success">v2 — FastAPI + JWT + Docker</span>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <canvas id="stockChart" style="max-height: 300px;"></canvas>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form action="/" method="GET" class="d-flex">
+            <input type="text" name="q" class="form-control me-2" placeholder="Search product name..." value="{{ query or '' }}">
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+            <a href="/" class="btn btn-outline-secondary ms-2">Reset</a>
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="/add" class="btn btn-success">+ Add New Item</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th><a href="/?sort=id&order={{ 'desc' if sort_by == 'id' and order == 'asc' else 'asc' }}&q={{ query or '' }}" class="text-white text-decoration-none">ID {{ '▲' if sort_by == 'id' and order == 'asc' else '▼' if sort_by == 'id' and order == 'desc' else '↕' }}</a></th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th><a href="/?sort=quantity&order={{ 'desc' if sort_by == 'quantity' and order == 'asc' else 'asc' }}&q={{ query or '' }}" class="text-white text-decoration-none">Qty {{ '▲' if sort_by == 'quantity' and order == 'asc' else '▼' if sort_by == 'quantity' and order == 'desc' else '↕' }}</a></th>
+                    <th><a href="/?sort=price&order={{ 'desc' if sort_by == 'price' and order == 'asc' else 'asc' }}&q={{ query or '' }}" class="text-white text-decoration-none">Price ($) {{ '▲' if sort_by == 'price' and order == 'asc' else '▼' if sort_by == 'price' and order == 'desc' else '↕' }}</a></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="{{ 'table-danger' if item.is_low_stock else '' }}">
+                    <td>{{ item.id }}</td>
+                    <td>
+                        <strong>{{ item.name }}</strong>
+                        {% if item.is_low_stock %}<span class="badge bg-danger ms-2">Low</span>{% endif %}
+                    </td>
+                    <td><span class="text-muted">{{ item.category.name if item.category else '-' }}</span></td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ "%.2f"|format(item.price) }}</td>
+                    <td>
+                        <a href="/edit/{{ item.id }}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="/delete/{{ item.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this item?')">Delete</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted py-5">No items found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const labels = [{% for item in items[:10] %}"{{ item.name }}",{% endfor %}];
+    const dataPoints = [{% for item in items[:10] %}{{ item.quantity }},{% endfor %}];
+    new Chart(document.getElementById('stockChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{ label: 'Stock (Top 10)', data: dataPoints,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card mt-4">
+            <div class="card-header bg-white py-3"><h3 class="mb-0 text-primary">📝 Add New Item</h3></div>
+            <div class="card-body p-4">
+                <form action="/add" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Product Name</label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g., Wireless Keyboard">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Category</label>
+                        <select name="category_id" class="form-select">
+                            <option value="">-- None --</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label fw-bold">Quantity</label>
+                            <input type="number" name="quantity" class="form-control" required placeholder="100">
+                        </div>
+                        <div class="col">
+                            <label class="form-label fw-bold">Unit Price ($)</label>
+                            <input type="number" step="0.01" name="price" class="form-control" required placeholder="29.99">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Low Stock Threshold</label>
+                        <input type="number" name="low_stock_threshold" class="form-control" value="20" placeholder="20">
+                    </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Save Item</button>
+                        <a href="/" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
