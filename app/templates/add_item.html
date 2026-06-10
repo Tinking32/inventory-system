@@ -28,16 +28,16 @@
                     <div class="row mb-3">
                         <div class="col">
                             <label class="form-label fw-bold">Quantity</label>
-                            <input type="number" name="quantity" class="form-control" required placeholder="100">
+                            <input type="number" name="quantity" min="0" class="form-control" required placeholder="100">
                         </div>
                         <div class="col">
                             <label class="form-label fw-bold">Unit Price ($)</label>
-                            <input type="number" step="0.01" name="price" class="form-control" required placeholder="29.99">
+                            <input type="number" step="0.01" name="price" min="0" class="form-control" required placeholder="29.99">
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Low Stock Threshold</label>
-                        <input type="number" name="low_stock_threshold" class="form-control" value="20" placeholder="20">
+                        <input type="number" name="low_stock_threshold" min="0" class="form-control" value="20" placeholder="20">
                     </div>
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">Save Item</button>

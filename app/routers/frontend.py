@@ -55,6 +55,15 @@ def add_item(
 ):
     cat_id = int(category_id) if category_id else None
 
+    # Validate non-negative
+    if quantity < 0 or price < 0 or low_stock_threshold < 0:
+        categories = db.query(Category).order_by(Category.name).all()
+        return templates.TemplateResponse(
+            "add_item.html",
+            {"request": request, "categories": categories, "error": "Quantity, price, and threshold must be >= 0."},
+            status_code=400,
+        )
+
     # Auto-detect category if none provided
     if not cat_id:
         suggested = suggest_category(name)
