@@ -48,4 +48,28 @@
         </div>
     </div>
 </div>
+<script>
+// Auto-detect category as user types product name
+const KEYWORDS = {
+    "Electronics": ["monitor","mouse","keyboard","battery","batteries","usb","cable","hub","charger","headphone","speaker","laptop","phone","tablet","display","webcam","printer","router","adapter","drive","ssd"],
+    "Beverages": ["coke","cola","milo","coffee","water","evian","tea","juice","drink","soda","milk","beer","wine","nescafe","pepsi","sprite","fanta"],
+    "Office Supplies": ["paper","pen","pencil","sticky","note","stapler","folder","binder","envelope","clip","tape","ruler","marker","notebook"],
+    "Food & Snacks": ["noodle","biscuit","nuts","snack","chocolate","chips","cracker","bread","rice","cereal","candy","cookie","popcorn","granola","pasta","soup"]
+};
+document.querySelector('input[name="name"]').addEventListener('input', function() {
+    const val = this.value.toLowerCase();
+    const sel = document.querySelector('select[name="category_id"]');
+    let best = null, bestScore = 0;
+    for (const [cat, kws] of Object.entries(KEYWORDS)) {
+        let score = 0;
+        kws.forEach(kw => { if (val.includes(kw)) score += kw.length; });
+        if (score > bestScore) { bestScore = score; best = cat; }
+    }
+    if (best) {
+        for (const opt of sel.options) {
+            if (opt.text === best) { sel.value = opt.value; break; }
+        }
+    }
+});
+</script>
 {% endblock %}

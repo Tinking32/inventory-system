@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Category, Product
+from app.services.category_auto import suggest_category
 
 templates = Jinja2Templates(directory="app/templates")
 router = APIRouter(tags=["frontend"])
@@ -51,6 +52,15 @@ def add_item(
     db: Session = Depends(get_db),
 ):
     cat_id = int(category_id) if category_id else None
+
+    # Auto-detect category if none provided
+    if not cat_id:
+        suggested = suggest_category(name)
+        if suggested:
+            existing = db.query(Category).filter(Category.name == suggested).first()
+            if existing:
+                cat_id = existing.id
+
     if cat_id and not db.get(Category, cat_id):
         categories = db.query(Category).order_by(Category.name).all()
         return templates.TemplateResponse(
