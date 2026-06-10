@@ -13,14 +13,17 @@
                         <label class="form-label fw-bold">Product Name</label>
                         <input type="text" name="name" class="form-control" required placeholder="e.g., Wireless Keyboard">
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label class="form-label fw-bold">Category</label>
-                        <select name="category_id" class="form-select">
-                            <option value="">-- None --</option>
-                            {% for cat in categories %}
-                            <option value="{{ cat.id }}">{{ cat.name }}</option>
-                            {% endfor %}
-                        </select>
+                        <div class="d-flex gap-2">
+                            <select name="category_id" class="form-select" style="position:relative; z-index:10;">
+                                <option value="">-- None --</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <a href="/categories" class="btn btn-outline-secondary text-nowrap">Manage</a>
+                        </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col">

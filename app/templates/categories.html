@@ -21,8 +21,10 @@
 <div class="row">
     <div class="col-md-5">
         <div class="card">
+            <div class="card-header bg-white py-2">
+                <strong>Add Category</strong>
+            </div>
             <div class="card-body">
-                <h5 class="card-title">Add Category</h5>
                 <form action="/categories" method="POST" class="d-flex gap-2">
                     <input type="text" name="name" class="form-control" placeholder="Category name" required>
                     <button type="submit" class="btn btn-primary">Add</button>
@@ -33,31 +35,35 @@
     <div class="col-md-7">
         <div class="card">
             <div class="card-body p-0">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-dark">
-                        <tr><th>ID</th><th>Name</th><th>Actions</th></tr>
+                        <tr><th style="width:60px">ID</th><th>Name</th><th style="width:100px">Actions</th></tr>
                     </thead>
                     <tbody>
                         {% for cat in categories %}
                         <tr id="row-{{ cat.id }}">
-                            <td style="width:60px">{{ cat.id }}</td>
+                            <td class="text-muted small">{{ cat.id }}</td>
                             <td>
-                                <span id="name-{{ cat.id }}" class="fw-bold">{{ cat.name }}</span>
-                                <form id="edit-form-{{ cat.id }}" action="/categories/{{ cat.id }}/edit" method="POST" style="display:none" class="d-flex gap-1">
-                                    <input type="text" name="name" class="form-control form-control-sm" value="{{ cat.name }}" required style="max-width:200px">
-                                    <button type="submit" class="btn btn-sm btn-success">Save</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleEdit({{ cat.id }})">Cancel</button>
+                                {# View state #}
+                                <span id="view-{{ cat.id }}" class="fw-bold">{{ cat.name }}</span>
+                                {# Edit state (hidden by default) #}
+                                <form id="edit-{{ cat.id }}" action="/categories/{{ cat.id }}/edit" method="POST" class="d-none d-flex gap-1 align-items-center">
+                                    <input type="text" name="name" class="form-control form-control-sm border-0 bg-transparent shadow-none p-0"
+                                           value="{{ cat.name }}" required
+                                           style="font-size:inherit; font-weight:600; color:inherit; text-decoration:underline dotted;">
+                                    <button type="submit" class="btn btn-sm btn-success py-0 px-1">💾</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1" onclick="cancelEdit({{ cat.id }})">❌</button>
                                 </form>
                             </td>
-                            <td style="width:120px">
-                                <button class="btn btn-outline-secondary btn-sm" onclick="toggleEdit({{ cat.id }})">✏️</button>
+                            <td id="actions-{{ cat.id }}">
+                                <button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="startEdit({{ cat.id }})" title="Edit">✏️</button>
                                 <form action="/categories/{{ cat.id }}/delete" method="POST" style="display:inline" onsubmit="return confirm('Delete {{ cat.name }}?');">
-                                    <button class="btn btn-outline-danger btn-sm">🗑</button>
+                                    <button class="btn btn-outline-danger btn-sm py-0 px-1" title="Delete">🗑️</button>
                                 </form>
                             </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="3" class="text-center text-muted py-3">No categories yet.</td></tr>
+                        <tr><td colspan="3" class="text-center text-muted py-4">No categories yet. Add one on the left.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -67,17 +73,20 @@
 </div>
 
 <script>
-function toggleEdit(id) {
-    const nameSpan = document.getElementById('name-' + id);
-    const editForm = document.getElementById('edit-form-' + id);
-    if (editForm.style.display === 'none') {
-        nameSpan.style.display = 'none';
-        editForm.style.display = 'flex';
-        editForm.querySelector('input').focus();
-    } else {
-        nameSpan.style.display = '';
-        editForm.style.display = 'none';
-    }
+// Toggle: show edit form, hide view text and action buttons
+function startEdit(id) {
+    document.getElementById('view-' + id).classList.add('d-none');
+    document.getElementById('edit-' + id).classList.remove('d-none');
+    document.getElementById('edit-' + id).classList.add('d-flex');
+    document.getElementById('actions-' + id).classList.add('d-none');
+    // Focus the input
+    document.getElementById('edit-' + id).querySelector('input').focus();
+}
+function cancelEdit(id) {
+    document.getElementById('view-' + id).classList.remove('d-none');
+    document.getElementById('edit-' + id).classList.add('d-none');
+    document.getElementById('edit-' + id).classList.remove('d-flex');
+    document.getElementById('actions-' + id).classList.remove('d-none');
 }
 </script>
 {% endblock %}
