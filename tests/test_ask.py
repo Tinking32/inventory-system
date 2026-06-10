@@ -71,10 +71,11 @@ def test_category_filter(client):
 
 
 def test_name_search(client):
+    """Searching for a product by name should return product_detail when found."""
     _seed(client)
     r = client.post("/api/ask/", json={"question": "find mouse"})
     assert r.status_code == 200
-    assert r.json()["query_type"] == "name_search"
+    assert r.json()["query_type"] == "product_detail"
     assert r.json()["results"][0]["name"] == "Wireless Mouse"
 
 
